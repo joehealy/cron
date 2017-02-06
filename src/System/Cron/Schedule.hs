@@ -76,7 +76,7 @@ readTime' = readTime
 
 -------------------------------------------------------------------------------
 -- | Scheduling Monad
-data Job = Job CronSchedule (IO ())
+data Job = Job CronSchedule (UTCTime -> IO ())
 
 -------------------------------------------------------------------------------
 type Jobs = [Job]
@@ -115,7 +115,7 @@ runScheduleT = runExceptT . flip runStateT [] . unSchedule
 
 -------------------------------------------------------------------------------
 class MonadSchedule m where
-    addJob ::  IO () -> String -> m ()
+    addJob ::  (UTCTime -> IO ()) -> String -> m ()
 
 instance (Monad m) => MonadSchedule (ScheduleT m) where
     addJob a t = do s :: Jobs <- get
@@ -151,7 +151,7 @@ forkJob :: Job -> IO ThreadId
 forkJob (Job s a) = forkIO $ forever $ do
             (timeAt, delay) <- findNextMinuteDelay
             threadDelay delay
-            when (scheduleMatches s timeAt) (void $ forkIO a)
+            when (scheduleMatches s timeAt) (void $ forkIO (a timeAt))
 
 
 -------------------------------------------------------------------------------

@@ -15,8 +15,8 @@ tests = testGroup "System.Cron.Schedule"
   , describeExecSchedule
   ]
 
-flipMVar :: MVar String -> IO ()
-flipMVar v = putMVar v "dost thou even hoist"
+flipMVar :: MVar String -> UTCTime -> IO ()
+flipMVar v _ = putMVar v "dost thou even hoist"
 
 describeMonadSchedule :: TestTree
 describeMonadSchedule = testGroup "MonadSchedule"
@@ -33,7 +33,7 @@ describeMonadSchedule = testGroup "MonadSchedule"
   where Right ((), s) = runSchedule $ do addJob noop "* * * * *"
                                          addJob noop "0 * * * *"
                                          addJob noop "0 0 * * *"
-        noop = return ()
+        noop _ = return ()
 
 describeExecSchedule :: TestTree
 describeExecSchedule = testGroup "execSchedule"
